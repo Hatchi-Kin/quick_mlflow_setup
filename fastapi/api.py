@@ -1,5 +1,5 @@
 import os
-
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from minio import Minio
 from sqlalchemy import create_engine, text
@@ -12,12 +12,13 @@ import mlflow.sklearn
 from mlflow.models import infer_signature
 
 
+load_dotenv()
 
 ####### DATABASE #########################################################################
 
-DATABASE_URL = "postgresql://postgres:postgres@postgres:5432/mlflow"
+DB_URI = os.getenv("DB_URI")
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DB_URI)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -41,9 +42,9 @@ def list_experiments_in_db():
 ####### MINIO ############################################################################
 
 minio_client = Minio(
-    endpoint="minio:9000",
-    access_key="cw3C8ZVcTL1Z3ooJUZu7",
-    secret_key="MuG9Wod7cEoyVTcDkc6dVu0CKvnCOcb75L9q6sSK",
+    endpoint=os.getenv("MINIO_ENDPOINT"),
+    access_key=os.getenv("MINIO_CUSTUM_ACCESS_KEY"),
+    secret_key=os.getenv("MINIO_CUSTUM_SECRET_KEY"),
     secure=False # True if you are using https, False if http
 )
 
@@ -57,7 +58,7 @@ def list_buckets():
 
 ####### MLFLOW ##########################################################################
 
-mlflow.set_tracking_uri("http://mlflow:5000")
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 
 def test_run():
     with mlflow.start_run():
