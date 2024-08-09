@@ -11,14 +11,12 @@ import mlflow
 import mlflow.sklearn
 from mlflow.models import infer_signature
 
-
 load_dotenv()
+
 
 ####### DATABASE #########################################################################
 
-DB_URI = os.getenv("DB_URI")
-
-engine = create_engine(DB_URI)
+engine = create_engine(os.getenv("DB_URI"))
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -35,9 +33,6 @@ def list_experiments_in_db():
         print(e)
         return [str(e)]
     
-##########################################################################################
-
-
 
 ####### MINIO ############################################################################
 
@@ -51,9 +46,6 @@ minio_client = Minio(
 
 def list_buckets():
     return minio_client.list_buckets()
-
-##########################################################################################
-
 
 
 ####### MLFLOW ##########################################################################
@@ -76,6 +68,7 @@ def test_run():
             "run name": f"{mlflow.active_run().info.run_name}"
         }
     
+
 def list_runs_in_experiment(experiment_name: str):
     try:
         experiment = mlflow.get_experiment_by_name(experiment_name)
@@ -85,32 +78,39 @@ def list_runs_in_experiment(experiment_name: str):
         return [str(e)]
 
 
-##########################################################################################
-
-
-
 ####### API ##############################################################################
 
-app = FastAPI()
+swagger_tags = [
+    {"name": "Mini0", "description": "Operations related to Minio"},
+    {"name": "MLFlow", "description": "Operations related to MLFlow"},
+    {"name": "test_run", "description": "Run a test MLFlow experiment"}
+]
 
-@app.get("/buckets")
+app = FastAPI(
+    title="Quick MLFlow Setup",
+    description="A simple API to interact with Minio, MLFlow and a postgres database",
+    version="0.1.0",
+    openapi_tags=swagger_tags,
+)
+
+@app.get("/buckets", tags=["Mini0"])
 def get_list_of_buckets():
     return list_buckets()
 
-@app.get("/experiments")
+@app.get("/experiments", tags=["MLFlow"])
 def get_list_of_experiments():
     return list_experiments_in_db()
 
-@app.get("/test_run")
+@app.get("/runs", tags=["MLFlow"])
+def get_runs_in_experiment(experiment_name: str = "Default"):
+    return list_runs_in_experiment(experiment_name)
+
+@app.get("/test_run", tags=["test_run"])
 def run_test():
     return test_run()
 
-@app.get("/runs")
-def get_runs_in_experiment(experiment_name: str):
-    return list_runs_in_experiment(experiment_name)
 
 ##########################################################################################
-
 
 
 if __name__ == "__main__":

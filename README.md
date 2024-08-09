@@ -19,9 +19,10 @@ docker compose up -d --build
 ```
 
 ## first time setup
-Need to go to the MiniO UI and create a  access key and secret key. 
-Then, make a copy of the `.env.example` file and rename it to `.env`.
-Update the `.env` file with the access key and secret key.
+Need to go to the MiniO UI at http://localhost:9001 using the default credentials (minioadmin:minioadmin)
+and create a  access key and secret key. 
+Then, make a copy of the `.env.example` files and rename them to `.env`.
+Update the `.env` files with the access key and secret key.
 
 then restart the services
 ```bash
